@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Board</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .column {
+            width: 250px;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: inline-block;
+            vertical-align: top;
+        }
+
+        .column h2 {
+            margin-top: 0;
+        }
+
+        .task {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+
+        .task:hover {
+            background-color: #f0f0f0;
+        }
+
+        .new-task {
+            margin-top: 10px;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border: 1px dashed #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Task Manager</h1>
+
+    <div class="column" id="not-started" ondrop="drop(event, 'not-started')" ondragover="allowDrop(event)">
+        <h2><span style="background-color: rgb(224, 147, 147);">  Not Started</span> <span id="not-started-count">0</span></h2>
+        <div class="new-task" onclick="addNewTask('not-started')">+ New</div>
+    </div>
+    <div class="column" id="in-progress" ondrop="drop(event, 'in-progress')" ondragover="allowDrop(event)">
+        <h2><span style="background-color: rgb(228, 252, 94);">  In progess</span>  <span id="in-progress-count">0</span></h2>
+        <div class="new-task" onclick="addNewTask('in-progress')">+ New</div>
+    </div>
+    <div class="column" id="completed" ondrop="drop(event, 'completed')" ondragover="allowDrop(event)">
+        <h2><span style="background-color: rgb(7, 246, 122);">Completed</span> <span id="completed-count">0</span></h2>
+        <div class="new-task" onclick="addNewTask('completed')">+ New</div>
+    </div>
+</div>
+
+<script>
+    // Sample tasks data
+    let tasks = {
+        'not-started': [],
+        'in-progress': [],
+        'completed': []
+    };
+
+    // Function to update task counts
+    function updateTaskCounts() {
+        document.getElementById('not-started-count').innerText = tasks['not-started'].length;
+        document.getElementById('in-progress-count').innerText = tasks['in-progress'].length;
+        document.getElementById('completed-count').innerText = tasks['completed'].length;
+    }
+
+    // Function to allow drop
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    // Function to handle drop event
+    function drop(event, status) {
+        event.preventDefault();
+        const taskId = event.dataTransfer.getData("text/plain");
+        const taskElement = document.getElementById(taskId);
+        const fromStatus = taskElement.dataset.status;
+
+        if (fromStatus !== status) {
+            // Remove task from its previous status
+            const index = tasks[fromStatus].findIndex(task => task.id === taskId);
+            tasks[fromStatus].splice(index, 1);
+            // Add task to the new status
+            tasks[status].push({ id: taskId, title: taskElement.innerText });
+            taskElement.dataset.status = status;
+            document.getElementById(status).appendChild(taskElement);
+            updateTaskCounts();
+        }
+    }
+
+    // Function to add new task
+    function addNewTask(status) {
+        const title = prompt("Enter task title:");
+        if (title) {
+            const taskId = `task-${Date.now()}`;
+            const taskElement = document.createElement('div');
+            taskElement.classList.add('task');
+            taskElement.id = taskId;
+            taskElement.dataset.status = status;
+            taskElement.innerText = title;
+            taskElement.draggable = true;
+            taskElement.addEventListener('dragstart', (event) => {
+                event.dataTransfer.setData("text/plain", event.target.id);
+            });
+            document.getElementById(status).appendChild(taskElement);
+            tasks[status].push({ id: taskId, title: title });
+            updateTaskCounts();
+        }
+    }
+</script>
+
+</body>
+</html>
